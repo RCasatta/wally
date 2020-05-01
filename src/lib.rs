@@ -35,7 +35,7 @@ pub fn bip39_mnemonic_from_bytes(entropy: &[u8]) -> String {
     let mut out: *mut c_char = CString::new("").unwrap().into_raw();
 
     let ret = unsafe {
-        ffi::bip39_mnemonic_from_bytes(ptr::null(), entropy.as_ptr(), entropy.len() as u64, &mut out)
+        ffi::bip39_mnemonic_from_bytes(ptr::null(), entropy.as_ptr(), entropy.len(), &mut out)
     };
     assert_eq!(ret, ffi::WALLY_OK);
     read_str(out)
@@ -60,18 +60,18 @@ pub fn bip39_mnemonic_to_bytes(mnemonic: &str) -> Option<Vec<u8>> {
 
     let c_mnemonic = make_str(mnemonic);
     let mut out = Vec::with_capacity(BIP39_MAX_ENTROPY_BYTES);
-    let mut written = 0u64;
+    let mut written = 0usize;
     let ret = unsafe {
         ffi::bip39_mnemonic_to_bytes(
             ptr::null(),
             c_mnemonic,
             out.as_mut_ptr(),
-            BIP39_MAX_ENTROPY_BYTES as u64,
+            BIP39_MAX_ENTROPY_BYTES,
             &mut written,
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
-    assert!(written <= BIP39_MAX_ENTROPY_BYTES as u64);
+    assert!(written <= BIP39_MAX_ENTROPY_BYTES);
     unsafe {
         out.set_len(written as usize);
     }
@@ -87,18 +87,18 @@ pub fn bip39_mnemonic_to_seed(mnemonic: &str, passphrase: &str) -> Option<[u8; B
     let c_mnemonic = make_str(mnemonic);
     let c_passphrase = make_str(passphrase);
     let mut out = [0u8; BIP39_SEED_BYTES];
-    let mut written = 0u64;
+    let mut written = 0usize;
     let ret = unsafe {
         ffi::bip39_mnemonic_to_seed(
             c_mnemonic,
             c_passphrase,
             out.as_mut_ptr(),
-            BIP39_SEED_BYTES as u64,
+            BIP39_SEED_BYTES,
             &mut written,
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
-    assert_eq!(written, BIP39_SEED_BYTES as u64);
+    assert_eq!(written, BIP39_SEED_BYTES);
     Some(out)
 }
 
@@ -123,7 +123,7 @@ pub fn tx_get_elements_signature_hash(
     let ret = unsafe {
         ffi::wally_tx_from_bytes(
             tx_bytes.as_ptr(),
-            tx_bytes.len() as u64,
+            tx_bytes.len(),
             flags | ffi::WALLY_TX_FLAG_USE_ELEMENTS,
             &mut wally_tx,
         )
@@ -142,15 +142,15 @@ pub fn tx_get_elements_signature_hash(
     let ret = unsafe {
         ffi::wally_tx_get_elements_signature_hash(
             wally_tx,
-            index as u64,
+            index,
             script_ptr,
-            script_len as u64,
+            script_len,
             value.as_ptr(),
-            value.len() as u64,
+            value.len(),
             sighash,
             flags,
             out.as_mut_ptr(),
-            sha256d::Hash::LEN as u64,
+            sha256d::Hash::LEN,
         )
     };
     assert_eq!(ret, ffi::WALLY_OK, "can't get signature_hash");
@@ -164,9 +164,9 @@ pub fn asset_blinding_key_from_seed(seed: &[u8]) -> MasterBlindingKey {
     let ret = unsafe {
         ffi::wally_asset_blinding_key_from_seed(
             seed.as_ptr(),
-            seed.len() as u64,
+            seed.len(),
             out.as_mut_ptr(),
-            out.len() as u64,
+            out.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -186,7 +186,7 @@ pub fn confidential_addr_from_addr(
             make_str(address),
             prefix,
             pub_key.as_ptr(),
-            pub_key.len() as u64,
+            pub_key.len(),
             &mut out,
         )
     };
@@ -202,11 +202,11 @@ pub fn asset_blinding_key_to_ec_private_key(
     let ret = unsafe {
         ffi::wally_asset_blinding_key_to_ec_private_key(
             master_blinding_key.0.as_ptr(),
-            master_blinding_key.0.len() as u64,
+            master_blinding_key.0.len(),
             script_pubkey.as_bytes().as_ptr(),
-            script_pubkey.as_bytes().len() as u64,
+            script_pubkey.as_bytes().len(),
             out.as_mut_ptr(),
-            out.len() as u64,
+            out.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -230,23 +230,23 @@ pub fn asset_unblind(
     let ret = unsafe {
         ffi::wally_asset_unblind(
             pub_key.as_ptr(),
-            pub_key.len() as u64,
+            pub_key.len(),
             priv_key.as_ptr(),
-            priv_key.len() as u64,
+            priv_key.len(),
             proof.as_ptr(),
-            proof.len() as u64,
+            proof.len(),
             commitment.as_ptr(),
-            commitment.len() as u64,
+            commitment.len(),
             extra.as_bytes().as_ptr(),
-            extra.as_bytes().len() as u64,
+            extra.as_bytes().len(),
             generator.as_ptr(),
-            generator.len() as u64,
+            generator.len(),
             asset_out.as_mut_ptr(),
-            asset_out.len() as u64,
+            asset_out.len(),
             abf_out.as_mut_ptr(),
-            abf_out.len() as u64,
+            abf_out.len(),
             vbf_out.as_mut_ptr(),
-            vbf_out.len() as u64,
+            vbf_out.len(),
             &mut value_out,
         )
     };
@@ -271,21 +271,21 @@ pub fn asset_unblind_with_nonce(
     let ret = unsafe {
         ffi::wally_asset_unblind_with_nonce(
             nonce.as_ptr(),
-            nonce.len() as u64,
+            nonce.len(),
             proof.as_ptr(),
-            proof.len() as u64,
+            proof.len(),
             commitment.as_ptr(),
-            commitment.len() as u64,
+            commitment.len(),
             extra.as_bytes().as_ptr(),
-            extra.as_bytes().len() as u64,
+            extra.as_bytes().len(),
             generator.as_ptr(),
-            generator.len() as u64,
+            generator.len(),
             asset_out.as_mut_ptr(),
-            asset_out.len() as u64,
+            asset_out.len(),
             abf_out.as_mut_ptr(),
-            abf_out.len() as u64,
+            abf_out.len(),
             vbf_out.as_mut_ptr(),
-            vbf_out.len() as u64,
+            vbf_out.len(),
             &mut value_out,
         )
     };
@@ -299,9 +299,9 @@ pub fn ec_public_key_from_private_key(priv_key: secp256k1::SecretKey) -> secp256
     let ret = unsafe {
         ffi::wally_ec_public_key_from_private_key(
             priv_key.as_ptr(),
-            priv_key.len() as u64,
+            priv_key.len(),
             pub_key.as_mut_ptr(),
-            pub_key.len() as u64,
+            pub_key.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -313,11 +313,11 @@ pub fn asset_generator_from_bytes(asset: &[u8; 32], abf: &[u8; 32]) -> Asset {
     let ret = unsafe {
         ffi::wally_asset_generator_from_bytes(
             asset.as_ptr(),
-            asset.len() as u64,
+            asset.len(),
             abf.as_ptr(),
-            abf.len() as u64,
+            abf.len(),
             generator.as_mut_ptr(),
-            generator.len() as u64,
+            generator.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -328,20 +328,20 @@ pub fn asset_generator_from_bytes(asset: &[u8; 32], abf: &[u8; 32]) -> Asset {
     Asset::Confidential(prefix, suffix)
 }
 
-pub fn asset_final_vbf(values: Vec<u64>, num_inputs: u32, abf: Vec<u8>, vbf: Vec<u8>) -> [u8; 32] {
+pub fn asset_final_vbf(values: Vec<u64>, num_inputs: usize, abf: Vec<u8>, vbf: Vec<u8>) -> [u8; 32] {
     let mut final_vbf = [0u8; 32];
 
     let ret = unsafe {
         ffi::wally_asset_final_vbf(
             values.as_ptr(),
-            values.len() as u64,
-            num_inputs as u64,
+            values.len(),
+            num_inputs,
             abf.as_ptr(),
-            abf.len() as u64,
+            abf.len(),
             vbf.as_ptr(),
-            vbf.len() as u64,
+            vbf.len(),
             final_vbf.as_mut_ptr(),
-            final_vbf.len() as u64,
+            final_vbf.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -358,11 +358,11 @@ pub fn asset_value_commitment(value: u64, vbf: [u8; 32], generator: Asset) -> Va
         ffi::wally_asset_value_commitment(
             value,
             vbf.as_ptr(),
-            vbf.len() as u64,
+            vbf.len(),
             generator.as_ptr(),
-            generator.len() as u64,
+            generator.len(),
             value_commitment.as_mut_ptr(),
-            value_commitment.len() as u64,
+            value_commitment.len(),
         )
     };
     assert_eq!(ret, ffi::WALLY_OK);
@@ -387,7 +387,7 @@ pub fn asset_rangeproof(
     min_bits: i32,
 ) -> Vec<u8> {
     let mut rangeproof_buffer = [0u8; 5134];
-    let mut written = 0u64;
+    let mut written = 0usize;
     let pub_key = pub_key.serialize();
     let commitment = elements::encode::serialize(&commitment); // should check commitment and generator are confidential
     let generator = elements::encode::serialize(&generator);
@@ -396,26 +396,26 @@ pub fn asset_rangeproof(
         ffi::wally_asset_rangeproof(
             value,
             pub_key.as_ptr(),
-            pub_key.len() as u64,
+            pub_key.len(),
             priv_key.as_ptr(),
-            priv_key.len() as u64,
+            priv_key.len(),
             asset.as_ptr(),
-            asset.len() as u64,
+            asset.len(),
             abf.as_ptr(),
-            abf.len() as u64,
+            abf.len(),
             vbf.as_ptr(),
-            vbf.len() as u64,
+            vbf.len(),
             commitment.as_ptr(),
-            commitment.len() as u64,
+            commitment.len(),
             extra.as_bytes().as_ptr(),
-            extra.as_bytes().len() as u64,
+            extra.as_bytes().len(),
             generator.as_ptr(),
-            generator.len() as u64,
+            generator.len(),
             min_value,
             exp,
             min_bits,
             rangeproof_buffer.as_mut_ptr(),
-            rangeproof_buffer.len() as u64,
+            rangeproof_buffer.len(),
             &mut written,
         )
     };
@@ -434,31 +434,31 @@ pub fn asset_surjectionproof(
     generators: &Vec<u8>,
     num_inputs: usize,
 ) -> Vec<u8> {
-    let mut proof_size = 0u64;
-    let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs as u64, &mut proof_size) };
+    let mut proof_size = 0usize;
+    let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs, &mut proof_size) };
     assert_eq!(ret, ffi::WALLY_OK);
 
     let output_generator = elements::encode::serialize(&output_generator);
 
     let mut proof = [0u8; 8259];
-    let mut written = 0u64;
+    let mut written = 0usize;
 
     let ret = unsafe {
         ffi::wally_asset_surjectionproof(
             output_asset.as_ptr(),
-            output_asset.len() as u64,
+            output_asset.len(),
             output_abf.as_ptr(),
-            output_abf.len() as u64,
+            output_abf.len(),
             output_generator.as_ptr(),
-            output_generator.len() as u64,
+            output_generator.len(),
             bytes.as_ptr(),
-            bytes.len() as u64,
+            bytes.len(),
             assets.as_ptr(),
-            assets.len() as u64,
+            assets.len(),
             abfs.as_ptr(),
-            abfs.len() as u64,
+            abfs.len(),
             generators.as_ptr(),
-            generators.len() as u64,
+            generators.len(),
             proof.as_mut_ptr(),
             proof_size,
             &mut written,
@@ -700,7 +700,7 @@ mod tests {
 
     #[test]
     fn test_sur_size() {
-        let mut proof_size = 0u64;
+        let mut proof_size = 0usize;
         let num_inputs = 1;
         let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs, &mut proof_size) };
         assert_eq!(ret, ffi::WALLY_OK);
