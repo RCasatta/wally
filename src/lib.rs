@@ -3,8 +3,9 @@
 //!
 
 use std::ptr;
+use elements::bitcoin;
+use elements::bitcoin::secp256k1;
 
-use bitcoin::secp256k1;
 use std::fmt;
 
 use bitcoin::hashes::{sha256d, Hash};
