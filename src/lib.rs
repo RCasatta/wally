@@ -425,6 +425,18 @@ pub fn asset_rangeproof(
     rangeproof_buffer[0..(written as usize)].to_vec()
 }
 
+pub fn asset_surjectionproof_size(num_inputs: usize) -> usize {
+    let mut proof_size = 0usize;
+    let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs, &mut proof_size) };
+    assert_eq!(
+        ret,
+        ffi::WALLY_OK,
+        "wally_asset_surjectionproof_size({}) fails",
+        num_inputs
+    );
+    proof_size
+}
+
 pub fn asset_surjectionproof(
     output_asset: [u8; 32],
     output_abf: [u8; 32],
@@ -435,10 +447,7 @@ pub fn asset_surjectionproof(
     generators: &Vec<u8>,
     num_inputs: usize,
 ) -> Vec<u8> {
-    let mut proof_size = 0usize;
-    let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs, &mut proof_size) };
-    assert_eq!(ret, ffi::WALLY_OK);
-
+    let proof_size = asset_surjectionproof_size(num_inputs);
     let output_generator = elements::encode::serialize(&output_generator);
 
     let mut proof = [0u8; 8259];
@@ -701,10 +710,8 @@ mod tests {
 
     #[test]
     fn test_sur_size() {
-        let mut proof_size = 0usize;
         let num_inputs = 1;
-        let ret = unsafe { ffi::wally_asset_surjectionproof_size(num_inputs, &mut proof_size) };
-        assert_eq!(ret, ffi::WALLY_OK);
+        let proof_size = asset_surjectionproof_size(num_inputs);
         assert_eq!(proof_size, 67);
     }
 
