@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 hex = "0.4.2"
-elements = "0.13.0"
+elements = "0.16.0"
 libc = "0.2.69"
 wally-sys = { git= "https://github.com/RCasatta/wally-sys", rev="4a2f6740a18f96e7eeb73f29523757647077a069" }
